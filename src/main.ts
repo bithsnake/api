@@ -14,8 +14,8 @@ async function bootstrap() {
   );
 
   await app.listen(
-    process.env.PORT ? Number(process.env.PORT) : 3000,
-    '0.0.0.0',
+    process.env.PORT ? Number(process.env.PORT) : 1000,
+    'localhost',
   );
 }
 
