@@ -24,5 +24,3 @@ exec(
     console.log(`Migration created successfully:\n${stdout}`);
   },
 );
-
-process?.exit(0);

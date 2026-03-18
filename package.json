@@ -19,8 +19,9 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:studio": "prisma studio --config=./prisma.config.ts",
-    "prisma:migrate": "tsx ./database/scripts/create-prisma-migration.ts",
     "prisma:generate": "npx prisma generate --schema ./prisma/schema.prisma",
+    "prisma:migrate:create": "tsx ./database/scripts/create-prisma-migration.ts",
+    "prisma:migrate:push": "npx prisma migrate dev --schema ./prisma/schema.prisma",
     "debug:pg-service": "node ./debug/pg-service.ps1",
     "api:test:create:user": "curl.exe -s -X POST http://localhost:3000/users -H \"Content-Type: application/json\" -d \"{\\\"email\\\":\\\"alice@example.com\\\",\\\"name\\\":\\\"Alice\\\",\\\"firstName\\\":\\\"Alice\\\",\\\"lastName\\\":\\\"Wonderland\\\",\\\"specialization\\\":\\\"dentist\\\"}\"",
     "api:test:create:user:prompt": "npx tsx database/create-prisma-user-test.ts"

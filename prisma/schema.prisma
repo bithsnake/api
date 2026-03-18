@@ -7,20 +7,77 @@ datasource db {
   provider = "postgresql"
 }
 
-model User {
-  id        Int   @id @default(autoincrement())
-  email     String   @unique
-  name      String?
-  firstName String?
-  lastName  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  specialization String?
+/*
+  Recommended cardinality:
+  - Appointment -> Billing: 1:1
+  - Appointment -> ReminderNotification: 1:N
+  - Appointment -> UserEventLog: 1:N
+  - Patient -> Appointment: 1:N (normal real-world model)
+*/
+model Appointment {
+  id          String   @id @default(cuid())
+  date        DateTime
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  patientId   String
+  patient     Patient  @relation(fields: [patientId], references: [id])
+
+  billing     Billing?
+  reminders   ReminderNotification[]
+  eventLogs   UserEventLog[]
 }
 
-model Appointment {
-  id        String   @id @default(cuid())
-  date      DateTime
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+model Patient {
+  id          String        @id @default(cuid())
+  name        String
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  appointments Appointment[]
+}
+
+model Billing {
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  amount        Float
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+}
+
+model ReminderNotification {
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  message       String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId])
+}
+
+model UserEventLog {
+  id            String      @id @default(cuid())
+  appointmentId String      @unique
+  event         String
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId])
+}
+
+model User {
+  id             Int       @id @default(autoincrement())
+  email          String    @unique
+  name           String?
+  firstName      String?
+  lastName       String?
+  specialization String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 }
