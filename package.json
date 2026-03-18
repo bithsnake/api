@@ -20,6 +20,7 @@
     "test:e2e": "jest --config ./test/jest-e2e.json",
     "prisma:studio": "prisma studio --config=./prisma.config.ts",
     "prisma:migrate": "tsx ./database/scripts/create-prisma-migration.ts",
+    "prisma:generate": "npx prisma generate --schema ./prisma/schema.prisma",
     "debug:pg-service": "node ./debug/pg-service.ps1"
   },
   "dependencies": {

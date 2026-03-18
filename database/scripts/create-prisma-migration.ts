@@ -12,14 +12,17 @@ exec(
   `npx prisma migrate dev --name ${_fileName} --create-only`,
   (error, stdout, stderr) => {
     if (error) {
-      // handle error
-      console.error(`Error executing command: ${error.message}`);
+      console.error(`Migration failed: ${error.message}`);
       return;
     }
+
     if (stderr) {
-      console.error(`Error: ${stderr}`);
-      return;
+      // Prisma may print non-fatal info here
+      console.warn(stderr);
     }
-    console.log(`🎉 Migration created successfully:\n${stdout}`);
+
+    console.log(`Migration created successfully:\n${stdout}`);
   },
 );
+
+process?.exit(0);

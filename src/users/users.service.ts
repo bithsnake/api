@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserRequest, UserResponse } from './users.interface';
 
@@ -7,28 +7,38 @@ import { UserRequest, UserResponse } from './users.interface';
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async create(body: UserRequest): Promise<boolean> {
+  async create(body: UserRequest): Promise<UserResponse> {
     const { name, email, specialization } = body;
-    await this.prisma.user.create({
+    return await this.prisma.user.create({
       data: {
         name,
         email,
         specialization,
       },
     });
-    return true;
   }
 
-  async findById(id: number): Promise<UserResponse> | never {
-    const user = await this.prisma.user.findUnique({
-      select: { name: true, email: true, specialization: true, id: true },
+  async getUserById(id: number): Promise<UserResponse> | never {
+    return await this.prisma.user.findUnique({
+      select: { id: true, name: true, email: true, specialization: true },
       where: { id },
     });
+  }
 
-    if (!user) {
-      throw new NotFoundException(`User with id ${id} was not found`);
-    }
+  async getUsers(): Promise<UserResponse[]> {
+    const users = await this.prisma.user.findMany();
+    return users;
+  }
 
-    return new Promise<UserResponse>((resolve): void => resolve(user));
+  async update(id: number, body: UserRequest): Promise<UserResponse> {
+    const { name, email, specialization } = body;
+    return await this.prisma.user.update({
+      where: { id },
+      data: {
+        name,
+        email,
+        specialization,
+      },
+    });
   }
 }
