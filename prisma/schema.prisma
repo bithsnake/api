@@ -7,13 +7,6 @@ datasource db {
   provider = "postgresql"
 }
 
-/*
-  Recommended cardinality:
-  - Appointment -> Billing: 1:1
-  - Appointment -> ReminderNotification: 1:N
-  - Appointment -> UserEventLog: 1:N
-  - Patient -> Appointment: 1:N (normal real-world model)
-*/
 model Appointment {
   id          Int   @id @default(autoincrement())
   name        String

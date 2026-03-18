@@ -23,10 +23,10 @@
     "prisma:migrate:create": "tsx ./database/scripts/create-prisma-migration.ts",
     "prisma:migrate:push": "npx prisma migrate dev --schema ./prisma/schema.prisma",
     "prisma:seeds:generate": "npx prisma migrate dev --schema ./prisma/schema.prisma",
-    "prisma:db:fresh": "prisma migrate reset --schema ./prisma/schema.prisma --force && tsx database/create-prisma-seeds.ts",
+    "prisma:db:fresh": "prisma migrate reset --schema ./prisma/schema.prisma --force && tsx database/scripts/create-prisma-seeds.ts",
     "debug:pg-service": "node ./debug/pg-service.ps1",
-    "api:test:create:user": "curl.exe -s -X POST http://localhost:3000/users -H \"Content-Type: application/json\" -d \"{\\\"email\\\":\\\"alice@example.com\\\",\\\"name\\\":\\\"Alice\\\",\\\"firstName\\\":\\\"Alice\\\",\\\"lastName\\\":\\\"Wonderland\\\",\\\"specialization\\\":\\\"dentist\\\"}\"",
-    "api:test:create:user:prompt": "npx tsx database/create-prisma-user-test.ts"
+    "api:test:create:user": "curl.exe -s -X POST http://localhost:3000/users -H \"Content-Typse: application/json\" -d \"{\\\"email\\\":\\\"alice@example.com\\\",\\\"name\\\":\\\"Alice\\\",\\\"firstName\\\":\\\"Alice\\\",\\\"lastName\\\":\\\"Wonderland\\\",\\\"specialization\\\":\\\"dentist\\\"}\"",
+    "api:test:create:user:prompt": "npx tsx database/scripts/create-prisma-user-test.ts"
   },
   "dependencies": {
     "@faker-js/faker": "^10.3.0",

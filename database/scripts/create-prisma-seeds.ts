@@ -3,7 +3,7 @@ import { $Enums, Prisma, PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 
 import { faker } from '@faker-js/faker';
-import { titleCase } from '../helper-utils';
+import { titleCase } from '../../helper-utils';
 
 void dotenv.config();
 const ENV = {
