@@ -1,0 +1,11 @@
+-- CreateEnum
+CREATE TYPE "AppointmentStatus" AS ENUM ('SCHEDULED', 'COMPLETED', 'CANCELED');
+
+-- CreateEnum
+CREATE TYPE "NotificationType" AS ENUM ('EMAIL', 'SMS');
+
+-- CreateEnum
+CREATE TYPE "EventType" AS ENUM ('CREATED', 'UPDATED', 'CANCELED');
+
+-- CreateEnum
+CREATE TYPE "SpecializationType" AS ENUM ('ORTHODONTICS', 'ENDODONTICS', 'PERIODONTICS', 'PROSTHODONTICS', 'PEDIATRIC_DENTISTRY');

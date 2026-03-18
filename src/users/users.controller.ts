@@ -3,10 +3,12 @@ import {
   Controller,
   Get,
   Param,
+  ParseEnumPipe,
   ParseIntPipe,
   Post,
   Put,
 } from '@nestjs/common';
+import { Role } from '@prisma/client';
 import { UserService } from './users.service';
 import type { UserRequest, UserResponse } from './users.interface';
 import { ApiResponse } from '../../api.interface';
@@ -15,7 +17,7 @@ import { ApiResponse } from '../../api.interface';
 export class UsersController {
   constructor(private readonly userService: UserService) {}
   @Get()
-  async findAllUsers(): Promise<ApiResponse<UserResponse[]>> {
+  async getUsers(): Promise<ApiResponse<UserResponse[]>> {
     try {
       const users = await this.userService.getUsers();
       return { success: true, data: users };
@@ -66,5 +68,16 @@ export class UsersController {
     }
 
     return { success: true, data: updatedUser };
+  }
+  @Get('role/:role')
+  async findUsersByRole(
+    @Param('role', new ParseEnumPipe(Role)) role: Role,
+  ): Promise<ApiResponse<UserResponse[]>> {
+    try {
+      const users = await this.userService.getUsersByRole(role);
+      return { success: true, data: users };
+    } catch (error) {
+      return { success: false, error: `Failed to retrieve users: ${error}` };
+    }
   }
 }
