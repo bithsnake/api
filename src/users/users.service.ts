@@ -2,16 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { UserResponse } from './users.interface';
-import { UpdateUserDto } from './update-user-dto';
-import { CreateUserDto } from './create-user-dto';
+import { UpdateUserDto } from './dto/update-user-dto';
+import { CreateUserDto } from './dto/create-user-dto';
+import { BaseService } from '../class-library';
 
-const userSelect = {
+const userSelect: Prisma.UserSelect = {
   id: true,
   name: true,
   firstName: true,
   lastName: true,
   email: true,
   role: true,
+  appointments: true,
+  updatedAt: true,
+  createdAt: true,
   specializationId: true,
   specialization: {
     select: {
@@ -23,8 +27,15 @@ const userSelect = {
 } satisfies Prisma.UserSelect;
 
 @Injectable()
-export class UserService {
-  constructor(private prisma: PrismaService) {}
+export class UserService extends BaseService<
+  UserResponse,
+  CreateUserDto,
+  UpdateUserDto
+> {
+  protected __baseServiceBrand: never;
+  constructor(private prisma: PrismaService) {
+    super();
+  }
 
   async create(body: CreateUserDto): Promise<UserResponse> {
     const { name, firstName, lastName, email, specializationId } = body;
@@ -48,20 +59,20 @@ export class UserService {
     }
   }
 
-  async getUserById(id: number): Promise<UserResponse | null> {
+  async getById(id: number): Promise<UserResponse | null> {
     return this.prisma.user.findUnique({
       select: userSelect,
       where: { id },
     });
   }
 
-  async getUsers(): Promise<UserResponse[]> {
+  async getAll(): Promise<UserResponse[]> {
     return this.prisma.user.findMany({
       select: userSelect,
     });
   }
 
-  async getUsersByRole(role: Role): Promise<UserResponse[]> {
+  async getAllByRole(role: Role): Promise<UserResponse[]> {
     return this.prisma.user.findMany({
       select: userSelect,
       where: { role },
@@ -92,6 +103,20 @@ export class UserService {
         error,
         `User`,
         `An error occurred while updating the user with id ${id}`,
+      );
+    }
+  }
+
+  async delete(id: number): Promise<void> {
+    try {
+      await this.prisma.user.delete({
+        where: { id },
+      });
+    } catch (error) {
+      this.prisma.handlePrismaWriteError(
+        error,
+        `User`,
+        `An error occurred while deleting the user with id ${id}`,
       );
     }
   }
