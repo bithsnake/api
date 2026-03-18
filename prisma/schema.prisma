@@ -15,13 +15,16 @@ datasource db {
   - Patient -> Appointment: 1:N (normal real-world model)
 */
 model Appointment {
-  id          String   @id @default(cuid())
+  id          Int   @id @default(autoincrement())
   date        DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  patientId   String
-  patient     Patient  @relation(fields: [patientId], references: [id])
+  patientId     Int
+  patient       Patient  @relation(fields: [patientId], references: [id])
+
+  userId     Int
+  user       User     @relation(fields: [userId], references: [id])
 
   billing     Billing?
   reminders   ReminderNotification[]
@@ -29,17 +32,18 @@ model Appointment {
 }
 
 model Patient {
-  id          String        @id @default(cuid())
+  id          Int           @id @default(autoincrement())
   name        String
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
+  email       String        @unique
 
   appointments Appointment[]
 }
 
 model Billing {
-  id            String      @id @default(cuid())
-  appointmentId String      @unique
+  id            Int      @id @default(autoincrement())
+  appointmentId Int         @unique
   amount        Float
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -48,8 +52,8 @@ model Billing {
 }
 
 model ReminderNotification {
-  id            String      @id @default(cuid())
-  appointmentId String
+  id            Int      @id @default(autoincrement())
+  appointmentId Int
   message       String
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -60,8 +64,8 @@ model ReminderNotification {
 }
 
 model UserEventLog {
-  id            String      @id @default(cuid())
-  appointmentId String
+  id            Int      @id @default(autoincrement())
+  appointmentId Int
   event         String
   createdAt     DateTime    @default(now())
   updatedAt     DateTime    @updatedAt
@@ -82,6 +86,8 @@ model User {
   specialization   Specialization? @relation(fields: [specializationId], references: [id])
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+
+  appointments Appointment[]
 }
 
 
