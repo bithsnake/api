@@ -156,6 +156,25 @@ async function main() {
     });
   }
   await prisma.user.createMany({ data: admins });
+
+  const userEventLogs: Prisma.UserEventLogCreateManyInput[] = [];
+  for (let i = 0; i < Number(ENV.APPOINTMENT_SEEDER_COUNT); i++) {
+    userEventLogs.push({
+      appointmentId: i + 1,
+      event: `Event for appointment ${i + 1}`,
+    });
+  }
+  await prisma.userEventLog.createMany({ data: userEventLogs });
+
+  const reminderNotifications: Prisma.ReminderNotificationCreateManyInput[] =
+    [];
+  for (let i = 0; i < Number(ENV.APPOINTMENT_SEEDER_COUNT); i++) {
+    reminderNotifications.push({
+      appointmentId: i + 1,
+      message: `Reminder for appointment ${i + 1}`,
+    });
+  }
+  await prisma.reminderNotification.createMany({ data: reminderNotifications });
 }
 
 main()
