@@ -14,6 +14,7 @@
 - Add richer reminder fields if needed, such as status, type, scheduled time, and delivery result.
 - Review whether patients should stay separate from users or eventually be linked more explicitly.
 - Add billing lifecycle fields if invoicing becomes more advanced.
+- Deepen PostgreSQL understanding with more explicit SQL usage, indexing, joins, constraints, and query tuning practice.
 
 ## API Improvements
 
@@ -28,6 +29,8 @@
 - Add role-based access rules for admin, dentist, receptionist, and patient users.
 - Add request logging, audit logging strategy, and rate limiting.
 - Add environment validation on startup.
+- Introduce Redis deliberately and learn it through one real use case first, such as caching, short-lived sessions, or queue-backed reminder processing.
+- Add a simple async workflow and later compare Redis-based queues with SQS for reliability and retry handling.
 
 ## Developer Experience
 
@@ -42,3 +45,6 @@
 - File uploads and storage support.
 - Metrics and observability dashboards.
 - Caching for read-heavy endpoints.
+- Learn Docker packaging for web, api, and worker services.
+- Learn AWS building blocks relevant to this app: RDS, ECS/Fargate, S3, CloudFront, Redis/ElastiCache, and SQS.
+- Learn infrastructure as code with Terraform or CDK after the local architecture is stable.
