@@ -14,6 +14,7 @@ const ENV = {
   PATIENT_SEEDER_COUNT: process.env.PATIENT_SEEDER_COUNT,
   APPOINTMENT_SEEDER_COUNT: process.env.APPOINTMENT_SEEDER_COUNT,
   BILLING_SEEDER_COUNT: process.env.BILLING_SEEDER_COUNT,
+  USER_PATIENT_SEEDER_COUNT: process.env.USER_PATIENT_SEEDER_COUNT,
   DATABASE_URL: process.env.DATABASE_URL,
 };
 
@@ -25,6 +26,7 @@ if (
   !ENV.PATIENT_SEEDER_COUNT ||
   !ENV.APPOINTMENT_SEEDER_COUNT ||
   !ENV.BILLING_SEEDER_COUNT ||
+  !ENV.USER_PATIENT_SEEDER_COUNT ||
   !ENV.DATABASE_URL
 ) {
   throw new Error('Missing environment variables');
@@ -92,6 +94,20 @@ async function main() {
   }
   await prisma.user.createMany({ data: dentists });
 
+  const userPatients: Prisma.UserCreateManyInput[] = [];
+  for (let i = 0; i < Number(ENV.USER_PATIENT_SEEDER_COUNT); i++) {
+    const fullName = faker.person.fullName();
+    const [firstName, lastName] = fullName.split(' ');
+    userPatients.push({
+      name: fullName,
+      firstName: firstName,
+      lastName: lastName,
+      email: faker.internet.email({ firstName, lastName }),
+      role: 'PATIENT',
+    });
+  }
+  await prisma.user.createMany({ data: userPatients });
+
   const patients: Prisma.PatientCreateInput[] = [];
   for (let i = 0; i < Number(ENV.PATIENT_SEEDER_COUNT); i++) {
     const fullName = faker.person.fullName();
@@ -108,6 +124,7 @@ async function main() {
     const date = faker.date.future();
     appointments.push({
       date: date,
+      name: `Appointment for ${date.toDateString()}`,
       patientId:
         Math.floor(Math.random() * Number(ENV.PATIENT_SEEDER_COUNT)) + 1,
       userId:

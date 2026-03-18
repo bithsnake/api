@@ -1,8 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { Prisma, Role } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
-import { UserRequest, UserResponse } from './users.interface';
+import { UserResponse } from './users.interface';
+import { UpdateUserDto } from './update-user-dto';
+import { CreateUserDto } from './create-user-dto';
 
 const userSelect = {
   id: true,
@@ -25,18 +26,26 @@ const userSelect = {
 export class UserService {
   constructor(private prisma: PrismaService) {}
 
-  async create(body: UserRequest): Promise<UserResponse> {
-    const { name, firstName, lastName, email, specialization } = body;
-    return this.prisma.user.create({
-      data: {
-        name,
-        firstName,
-        lastName,
-        email,
-        specializationId: specialization ? Number(specialization) : null,
-      },
-      select: userSelect,
-    });
+  async create(body: CreateUserDto): Promise<UserResponse> {
+    const { name, firstName, lastName, email, specializationId } = body;
+    try {
+      return await this.prisma.user.create({
+        data: {
+          name,
+          firstName,
+          lastName,
+          email,
+          specializationId: specializationId ? Number(specializationId) : null,
+        },
+        select: userSelect,
+      });
+    } catch (error) {
+      this.prisma.handlePrismaWriteError(
+        error,
+        'User',
+        'An error occurred while creating the user',
+      );
+    }
   }
 
   async getUserById(id: number): Promise<UserResponse | null> {
@@ -59,18 +68,31 @@ export class UserService {
     });
   }
 
-  async update(id: number, body: UserRequest): Promise<UserResponse> {
-    const { name, firstName, lastName, email, specialization } = body;
-    return this.prisma.user.update({
-      where: { id },
-      data: {
-        name,
-        firstName,
-        lastName,
-        email,
-        specializationId: specialization ? Number(specialization) : null,
-      },
-      select: userSelect,
-    });
+  async update(id: number, body: UpdateUserDto): Promise<UserResponse> {
+    const data = {
+      ...(body.name !== undefined ? { name: body.name } : {}),
+      ...(body.firstName !== undefined ? { firstName: body.firstName } : {}),
+      ...(body.lastName !== undefined ? { lastName: body.lastName } : {}),
+      ...(body.email !== undefined ? { email: body.email } : {}),
+      ...(body.specializationId !== undefined
+        ? { specializationId: body.specializationId }
+        : {}),
+    };
+
+    try {
+      return await this.prisma.user.update({
+        where: { id },
+        data: {
+          ...data,
+        },
+        select: userSelect,
+      });
+    } catch (error) {
+      this.prisma.handlePrismaWriteError(
+        error,
+        `User`,
+        `An error occurred while updating the user with id ${id}`,
+      );
+    }
   }
 }

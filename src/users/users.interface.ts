@@ -1,13 +1,5 @@
 import { Role, SpecializationType } from '@prisma/client';
 
-export interface UserRequest {
-  name: string;
-  firstName: string;
-  lastName: string;
-  email: string;
-  specialization?: string;
-}
-
 export interface UserSpecializationResponse {
   id: number;
   name: string;
@@ -25,6 +17,7 @@ export interface UserResponse {
   role: Role;
 }
 
-export interface DoctorResponse extends UserResponse {
-  speciality: string;
+export interface DentistResponse extends UserResponse {
+  specializationType: SpecializationType;
+  specializationId: number;
 }

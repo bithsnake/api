@@ -16,6 +16,7 @@ datasource db {
 */
 model Appointment {
   id          Int   @id @default(autoincrement())
+  name        String
   date        DateTime
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -29,6 +30,8 @@ model Appointment {
   billing     Billing?
   reminders   ReminderNotification[]
   eventLogs   UserEventLog[]
+
+  status     AppointmentStatus @default(SCHEDULED)
 }
 
 model Patient {
@@ -106,6 +109,7 @@ enum Role {
   DENTIST
   RECEPTIONIST
   NEW
+  PATIENT
 }
 
 

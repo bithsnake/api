@@ -1,7 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unsafe-call */
-import { Injectable, OnModuleDestroy, OnModuleInit } from '@nestjs/common';
-import { PrismaClient } from '@prisma/client';
+import {
+  ConflictException,
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+  OnModuleDestroy,
+  OnModuleInit,
+} from '@nestjs/common';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
+import { PRISMA_ERRORS } from './prisma.constants';
 
 @Injectable()
 export class PrismaService
@@ -21,5 +29,28 @@ export class PrismaService
 
   async onModuleDestroy() {
     await this.$disconnect();
+  }
+
+  // break out error handling
+  handlePrismaWriteError(
+    error: unknown,
+    subject: string,
+    unknownErrorMessage: string,
+  ): never {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === PRISMA_ERRORS.UNIQUE_CONSTRAINT_VIOLATION
+    ) {
+      throw new ConflictException(`${subject} already exists`);
+    }
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === PRISMA_ERRORS.RECORD_NOT_FOUND
+    ) {
+      throw new NotFoundException(`${subject} not found`);
+    }
+
+    throw new InternalServerErrorException(unknownErrorMessage);
   }
 }
