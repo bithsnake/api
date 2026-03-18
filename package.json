@@ -21,7 +21,9 @@
     "prisma:studio": "prisma studio --config=./prisma.config.ts",
     "prisma:migrate": "tsx ./database/scripts/create-prisma-migration.ts",
     "prisma:generate": "npx prisma generate --schema ./prisma/schema.prisma",
-    "debug:pg-service": "node ./debug/pg-service.ps1"
+    "debug:pg-service": "node ./debug/pg-service.ps1",
+    "api:test:create:user": "curl.exe -s -X POST http://localhost:3000/users -H \"Content-Type: application/json\" -d \"{\\\"email\\\":\\\"alice@example.com\\\",\\\"name\\\":\\\"Alice\\\",\\\"firstName\\\":\\\"Alice\\\",\\\"lastName\\\":\\\"Wonderland\\\",\\\"specialization\\\":\\\"dentist\\\"}\"",
+    "api:test:create:user:prompt": "npx tsx database/create-prisma-user-test.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
