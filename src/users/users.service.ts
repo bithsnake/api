@@ -6,7 +6,7 @@ import { UpdateUserDto } from './dto/update-user-dto';
 import { CreateUserDto } from './dto/create-user-dto';
 import { BaseService } from '../class-library';
 
-const userSelect: Prisma.UserSelect = {
+export const userSelect: Prisma.UserSelect = {
   id: true,
   name: true,
   firstName: true,

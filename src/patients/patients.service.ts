@@ -9,7 +9,7 @@ type CreatePatientInput = {
   email: string;
 };
 
-const patientSelect = {
+export const patientSelect = {
   id: true,
   name: true,
   email: true,

@@ -25,7 +25,7 @@ export abstract class BaseController<T, S, R, V extends BaseService<T, S, R>> {
   }
 
   @Get(':id')
-  async getById(@Param('id') id: number): Promise<T> {
+  async getById(@Param('id') id: number): Promise<T | null> {
     return await this.service.getById(id);
   }
 
@@ -35,7 +35,7 @@ export abstract class BaseController<T, S, R, V extends BaseService<T, S, R>> {
   }
 
   @Put(':id')
-  async update(@Param('id') id: number, @Body() body: R): Promise<T> {
+  async update(@Param('id') id: number, @Body() body: R): Promise<T | null> {
     return await this.service.update(id, body);
   }
 

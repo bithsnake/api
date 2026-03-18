@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { Appointment } from '@prisma/client';
 import { AppointmentsService } from './appointments.service';
 import { CreateAppointmentDto } from './dto/create-appointment-dto';
@@ -14,5 +14,10 @@ export class AppointmentsController extends BaseController<
 > {
   constructor(readonly appointmentsService: AppointmentsService) {
     super(appointmentsService);
+  }
+
+  @Get(':id/details')
+  async getByIdWithRelations(@Param('id', ParseIntPipe) id: number) {
+    return this.appointmentsService.getByIdWithRelations(id);
   }
 }

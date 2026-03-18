@@ -4,6 +4,9 @@ import { Appointment, Prisma } from '@prisma/client';
 import { CreateAppointmentDto } from './dto/create-appointment-dto';
 import { BaseService } from '../class-library';
 import { UpdateAppointmentDto } from './dto/update-appointment-dto';
+import { patientSelect } from '../patients/patients.service';
+import { userSelect } from '../users/users.service';
+import { billingSelect } from '../billings/billings.service';
 
 export const appointMentSelect = {
   id: true,
@@ -114,6 +117,32 @@ export class AppointmentsService extends BaseService<
         error,
         'Appointment',
         'An error occurred while updating the appointment',
+      );
+    }
+  }
+
+  async getByIdWithRelations(id: number): Promise<Appointment | null> {
+    try {
+      return this.prisma.appointment.findUnique({
+        where: { id },
+        select: {
+          ...appointMentSelect,
+          patient: {
+            select: patientSelect,
+          },
+          user: {
+            select: { ...userSelect, appointments: false },
+          },
+          billing: {
+            select: billingSelect,
+          },
+        },
+      });
+    } catch (error) {
+      this.prisma.handlePrismaWriteError(
+        error,
+        'Appointment',
+        'An error occurred while fetching the appointment with relations',
       );
     }
   }

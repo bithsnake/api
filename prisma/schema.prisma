@@ -8,69 +8,62 @@ datasource db {
 }
 
 model Appointment {
-  id          Int   @id @default(autoincrement())
-  name        String
-  date        DateTime
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        Int      @id @default(autoincrement())
+  name      String
+  date      DateTime
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  patientId     Int
-  patient       Patient  @relation(fields: [patientId], references: [id])
+  patientId Int
+  patient   Patient @relation(fields: [patientId], references: [id])
 
-  userId     Int
-  user       User     @relation(fields: [userId], references: [id])
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
 
-  billing     Billing?
-  reminders   ReminderNotification[]
-  eventLogs   UserEventLog[]
+  billing   Billing?
+  reminders Reminder[]
+  eventLogs AppointmentEventLog[]
 
-  status     AppointmentStatus @default(SCHEDULED)
+  status AppointmentStatus @default(SCHEDULED)
 }
 
 model Patient {
-  id          Int           @id @default(autoincrement())
-  name        String
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
-  email       String        @unique
+  id        Int      @id @default(autoincrement())
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  email     String   @unique
 
   appointments Appointment[]
 }
 
 model Billing {
   id            Int      @id @default(autoincrement())
-  appointmentId Int         @unique
+  appointmentId Int      @unique
   amount        Float
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  description String?
+
+  eventLogs BillingEventLog[]
 }
 
-model ReminderNotification {
+model Reminder {
   id            Int      @id @default(autoincrement())
   appointmentId Int
   message       String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
-  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
 
-  @@index([appointmentId])
-}
-
-model UserEventLog {
-  id            Int      @id @default(autoincrement())
-  appointmentId Int
-  event         String
-  createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
-
-  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  eventLogs ReminderEventLog[]
 
   @@index([appointmentId])
 }
-
 model User {
   id               Int             @id @default(autoincrement())
   email            String          @unique
@@ -84,8 +77,11 @@ model User {
   updatedAt        DateTime        @updatedAt
 
   appointments Appointment[]
-}
 
+  eventLogs UserEventLog[]
+
+  @@index([specializationId])
+}
 
 model Specialization {
   id        Int                 @id @default(autoincrement())
@@ -96,6 +92,66 @@ model Specialization {
   updatedAt DateTime            @updatedAt
 }
 
+// event logs
+model AppointmentEventLog {
+  id            Int       @id @default(autoincrement())
+  appointmentId Int
+  eventType     EventType @default(CREATED)
+  event         String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  @@index([appointmentId])
+}
+
+model BillingEventLog {
+  id        Int       @id @default(autoincrement())
+  billingId Int
+  eventType EventType @default(CREATED)
+  event     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  billing Billing @relation(fields: [billingId], references: [id], onDelete: Cascade)
+
+  @@index([billingId])
+}
+
+model ReminderEventLog {
+  id         Int       @id @default(autoincrement())
+  reminderId Int
+  eventType  EventType @default(CREATED)
+  event      String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  reminder Reminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
+
+  @@index([reminderId])
+}
+
+model UserEventLog {
+  id        Int       @id @default(autoincrement())
+  userId    Int?      
+  eventType EventType @default(CREATED)
+  event     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+enum EventType {
+  CREATED
+  UPDATED
+  CANCELED
+  REMINDER
+  DELETED
+}
 
 enum Role {
   ADMIN
@@ -104,7 +160,6 @@ enum Role {
   NEW
   PATIENT
 }
-
 
 enum AppointmentStatus {
   SCHEDULED
@@ -117,10 +172,16 @@ enum NotificationType {
   SMS
 }
 
-enum EventType {
-  CREATED
-  UPDATED
-  CANCELED
+enum ReminderStatus {
+  PENDING
+  SENT
+  FAILED
+}
+
+enum ReminderType {
+  APPOINTMENT_REMINDER
+  USER_REMINDER
+  BILLING_REMINDER
 }
 
 enum SpecializationType {

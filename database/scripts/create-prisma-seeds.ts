@@ -15,6 +15,13 @@ const ENV = {
   APPOINTMENT_SEEDER_COUNT: process.env.APPOINTMENT_SEEDER_COUNT,
   BILLING_SEEDER_COUNT: process.env.BILLING_SEEDER_COUNT,
   USER_PATIENT_SEEDER_COUNT: process.env.USER_PATIENT_SEEDER_COUNT,
+  REMINDER_SEEDER_COUNT: process.env.REMINDER_SEEDER_COUNT,
+  APPOINTMENT_EVENT_LOG_SEEDER_COUNT:
+    process.env.APPOINTMENT_EVENT_LOG_SEEDER_COUNT,
+  BILLING_EVENT_LOG_SEEDER_COUNT: process.env.BILLING_EVENT_LOG_SEEDER_COUNT,
+  REMINDER_EVENT_LOG_SEEDER_COUNT: process.env.REMINDER_EVENT_LOG_SEEDER_COUNT,
+  USER_EVENT_LOG_SEEDER_COUNT: process.env.USER_EVENT_LOG_SEEDER_COUNT,
+
   DATABASE_URL: process.env.DATABASE_URL,
 };
 
@@ -27,6 +34,11 @@ if (
   !ENV.APPOINTMENT_SEEDER_COUNT ||
   !ENV.BILLING_SEEDER_COUNT ||
   !ENV.USER_PATIENT_SEEDER_COUNT ||
+  !ENV.REMINDER_SEEDER_COUNT ||
+  !ENV.APPOINTMENT_EVENT_LOG_SEEDER_COUNT ||
+  !ENV.BILLING_EVENT_LOG_SEEDER_COUNT ||
+  !ENV.REMINDER_EVENT_LOG_SEEDER_COUNT ||
+  !ENV.USER_EVENT_LOG_SEEDER_COUNT ||
   !ENV.DATABASE_URL
 ) {
   throw new Error('Missing environment variables');
@@ -45,6 +57,11 @@ async function main() {
   await prisma.user.deleteMany();
   await prisma.patient.deleteMany();
   await prisma.specialization.deleteMany();
+  await prisma.reminder.deleteMany();
+  await prisma.userEventLog.deleteMany();
+  await prisma.appointmentEventLog.deleteMany();
+  await prisma.billingEventLog.deleteMany();
+  await prisma.reminderEventLog.deleteMany();
 
   // run all migrations first before seeding
   await prisma.$executeRaw`ALTER SEQUENCE "Specialization_id_seq" RESTART WITH 1;`;
@@ -52,7 +69,7 @@ async function main() {
   await prisma.$executeRaw`ALTER SEQUENCE "Patient_id_seq" RESTART WITH 1;`;
   await prisma.$executeRaw`ALTER SEQUENCE "Appointment_id_seq" RESTART WITH 1;`;
   await prisma.$executeRaw`ALTER SEQUENCE "Billing_id_seq" RESTART WITH 1;`;
-
+  await prisma.$executeRaw`ALTER SEQUENCE "Reminder_id_seq" RESTART WITH 1;`;
   const specializationTypes = Object.values($Enums.SpecializationType);
   const specialiations: Prisma.SpecializationCreateInput[] = [];
 
@@ -139,6 +156,7 @@ async function main() {
     billings.push({
       appointmentId: i + 1,
       amount: parseFloat((Math.random() * 500).toFixed(2)),
+      description: `Billing for appointment ${i + 1}`,
     });
   }
   await prisma.billing.createMany({ data: billings });
@@ -173,24 +191,87 @@ async function main() {
   }
   await prisma.user.createMany({ data: admins });
 
+  const reminders: Prisma.ReminderCreateManyInput[] = [];
+  for (let i = 0; i < Number(ENV.REMINDER_EVENT_LOG_SEEDER_COUNT); i++) {
+    reminders.push({
+      appointmentId:
+        Math.floor(Math.random() * Number(ENV.APPOINTMENT_SEEDER_COUNT)) + 1,
+      message: `Reminder for appointment ${i + 1}`,
+    });
+  }
+  await prisma.reminder.createMany({ data: reminders });
+
+  // event logs
   const userEventLogs: Prisma.UserEventLogCreateManyInput[] = [];
-  for (let i = 0; i < Number(ENV.APPOINTMENT_SEEDER_COUNT); i++) {
+  for (let i = 0; i < Number(ENV.USER_EVENT_LOG_SEEDER_COUNT); i++) {
     userEventLogs.push({
-      appointmentId: i + 1,
-      event: `Event for appointment ${i + 1}`,
+      userId: Math.floor(Math.random() * Number(ENV.NEW_USER_SEEDER_COUNT)) + 1,
+      eventType:
+        $Enums.EventType[
+          faker.helpers.arrayElement(
+            Object.keys($Enums.EventType) as Array<
+              keyof typeof $Enums.EventType
+            >,
+          )
+        ],
+      event: `Event log for user ${i + 1}`,
     });
   }
   await prisma.userEventLog.createMany({ data: userEventLogs });
 
-  const reminderNotifications: Prisma.ReminderNotificationCreateManyInput[] =
-    [];
-  for (let i = 0; i < Number(ENV.APPOINTMENT_SEEDER_COUNT); i++) {
-    reminderNotifications.push({
-      appointmentId: i + 1,
-      message: `Reminder for appointment ${i + 1}`,
+  const appointMentEventLogs: Prisma.AppointmentEventLogCreateManyInput[] = [];
+  for (let i = 0; i < Number(ENV.APPOINTMENT_EVENT_LOG_SEEDER_COUNT); i++) {
+    appointMentEventLogs.push({
+      appointmentId:
+        Math.floor(Math.random() * Number(ENV.APPOINTMENT_SEEDER_COUNT)) + 1,
+      eventType:
+        $Enums.EventType[
+          faker.helpers.arrayElement(
+            Object.keys($Enums.EventType) as Array<
+              keyof typeof $Enums.EventType
+            >,
+          )
+        ],
+      event: `Event log for appointment ${i + 1}`,
     });
   }
-  await prisma.reminderNotification.createMany({ data: reminderNotifications });
+  await prisma.appointmentEventLog.createMany({ data: appointMentEventLogs });
+
+  const billingEventLogs: Prisma.BillingEventLogCreateManyInput[] = [];
+  for (let i = 0; i < Number(ENV.BILLING_EVENT_LOG_SEEDER_COUNT); i++) {
+    billingEventLogs.push({
+      billingId:
+        Math.floor(Math.random() * Number(ENV.BILLING_SEEDER_COUNT)) + 1,
+      eventType:
+        $Enums.EventType[
+          faker.helpers.arrayElement(
+            Object.keys($Enums.EventType) as Array<
+              keyof typeof $Enums.EventType
+            >,
+          )
+        ],
+      event: `Event log for billing ${i + 1}`,
+    });
+  }
+  await prisma.billingEventLog.createMany({ data: billingEventLogs });
+
+  const reminderEventLogs: Prisma.ReminderEventLogCreateManyInput[] = [];
+  for (let i = 0; i < Number(ENV.REMINDER_EVENT_LOG_SEEDER_COUNT); i++) {
+    reminderEventLogs.push({
+      reminderId:
+        Math.floor(Math.random() * Number(ENV.REMINDER_SEEDER_COUNT)) + 1,
+      eventType:
+        $Enums.EventType[
+          faker.helpers.arrayElement(
+            Object.keys($Enums.EventType) as Array<
+              keyof typeof $Enums.EventType
+            >,
+          )
+        ],
+      event: `Event log for reminder ${i + 1}`,
+    });
+  }
+  await prisma.reminderEventLog.createMany({ data: reminderEventLogs });
 }
 
 main()

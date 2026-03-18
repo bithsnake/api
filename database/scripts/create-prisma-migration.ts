@@ -6,21 +6,30 @@ if (!_fileName) {
   process?.exit(1);
 }
 
-import { exec } from 'child_process';
-
-exec(
-  `npx prisma migrate dev --name ${_fileName} --create-only`,
-  (error, stdout, stderr) => {
-    if (error) {
-      console.error(`Migration failed: ${error.message}`);
-      return;
-    }
-
-    if (stderr) {
-      // Prisma may print non-fatal info here
-      console.warn(stderr);
-    }
-
-    console.log(`Migration created successfully:\n${stdout}`);
+import { spawn } from 'child_process';
+const child = spawn(
+  'npx',
+  [
+    'prisma',
+    'migrate',
+    'dev',
+    '--schema',
+    './prisma/schema.prisma',
+    '--name',
+    _fileName,
+    '--create-only',
+  ],
+  {
+    stdio: 'inherit',
+    shell: true,
   },
 );
+
+child.on('exit', (code) => {
+  process.exit(code ?? 1);
+});
+
+child.on('error', (error) => {
+  console.error(error);
+  process.exit(1);
+});
