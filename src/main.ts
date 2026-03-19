@@ -19,9 +19,13 @@ async function bootstrap() {
     }),
   );
 
-  const PORT = process.env.PORT ? Number(process.env.PORT) : 1001;
+  const PORT = process.env.PORT ? Number(process.env.PORT) : 1000;
 
-  app.enableCors({ origin: 'http://localhost:3000' });
+  app.enableCors({
+    origin: ['http://localhost:3000'],
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  });
 
   await app.listen(PORT, 'localhost');
 }

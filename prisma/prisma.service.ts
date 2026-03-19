@@ -37,20 +37,33 @@ export class PrismaService
     subject: string,
     unknownErrorMessage: string,
   ): never {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === PRISMA_ERRORS.UNIQUE_CONSTRAINT_VIOLATION
-    ) {
-      throw new ConflictException(`${subject} already exists`);
+    const postgresCode = (error as { cause?: { code?: string } })?.cause?.code;
+    if (postgresCode === '23001' || postgresCode === '23503') {
+      throw new ConflictException(
+        'Cannot delete ' +
+          subject +
+          ' because it is referenced by other records.',
+      );
     }
 
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === PRISMA_ERRORS.RECORD_NOT_FOUND
-    ) {
-      throw new NotFoundException(`${subject} not found`);
+    switch ((error as Prisma.PrismaClientKnownRequestError).code) {
+      case PRISMA_ERRORS.UNIQUE_CONSTRAINT_VIOLATION:
+        throw new ConflictException(
+          `${subject} already exists. Please choose a different value.`,
+        );
+      case PRISMA_ERRORS.RECORD_NOT_FOUND:
+        throw new NotFoundException(`${subject} not found.`);
+      case PRISMA_ERRORS.FOREIGN_KEY_CONSTRAINT_VIOLATION:
+        throw new ConflictException(
+          `Cannot delete ${subject} because it is referenced by other records.`,
+        );
+      case PRISMA_ERRORS.RELATION_VIOLATION:
+        throw new ConflictException(
+          `Cannot delete ${subject} because it has related records.`,
+        );
+      default:
+        console.error('Prisma error:', error);
+        throw new InternalServerErrorException(unknownErrorMessage);
     }
-
-    throw new InternalServerErrorException(unknownErrorMessage);
   }
 }
