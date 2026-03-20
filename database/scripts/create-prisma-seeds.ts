@@ -146,6 +146,13 @@ async function main() {
         Math.floor(Math.random() * Number(ENV.PATIENT_SEEDER_COUNT)) + 1,
       userId:
         Math.floor(Math.random() * Number(ENV.DENTIST_USER_SEEDER_COUNT)) + 1,
+      // randomise status
+      status: faker.helpers.arrayElement([
+        'SCHEDULED',
+        'COMPLETED',
+        'CANCELED',
+        'DELETED',
+      ] as $Enums.AppointmentStatus[]),
     });
   }
 

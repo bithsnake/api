@@ -165,6 +165,7 @@ enum AppointmentStatus {
   SCHEDULED
   COMPLETED
   CANCELED
+  DELETED
 }
 
 enum NotificationType {

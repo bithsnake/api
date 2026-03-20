@@ -85,8 +85,9 @@ export class AppointmentsService extends BaseService<
 
   async delete(id: number): Promise<void> {
     try {
-      await this.prisma.appointment.delete({
+      await this.prisma.appointment.update({
         where: { id },
+        data: { status: 'DELETED' },
       });
     } catch (error) {
       this.prisma.handlePrismaWriteError(
