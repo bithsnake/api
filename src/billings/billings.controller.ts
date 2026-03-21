@@ -1,4 +1,4 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param, ParseIntPipe } from '@nestjs/common';
 import { Billing } from '@prisma/client';
 import { BaseController } from '../class-library';
 import { CreateBillingDto } from './dto/create-billing-dto';
@@ -14,5 +14,10 @@ export class BillingsController extends BaseController<
 > {
   constructor(private readonly billingsService: BillingsService) {
     super(billingsService);
+  }
+
+  @Get(':id/details')
+  async getDetails(@Param('id', ParseIntPipe) id: number): Promise<Billing> {
+    return this.billingsService.getById(id);
   }
 }

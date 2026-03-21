@@ -9,6 +9,7 @@ export const billingSelect = {
   id: true,
   appointmentId: true,
   amount: true,
+  status: true,
   description: true,
   createdAt: true,
   updatedAt: true,
@@ -94,8 +95,9 @@ export class BillingsService extends BaseService<
   }
   async delete(id: number): Promise<void> {
     try {
-      await this.prisma.billing.delete({
+      await this.prisma.billing.update({
         where: { id },
+        data: { status: 'DELETED' },
       });
     } catch (error) {
       this.prisma.handlePrismaWriteError(

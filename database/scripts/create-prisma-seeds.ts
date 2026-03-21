@@ -164,6 +164,14 @@ async function main() {
       appointmentId: i + 1,
       amount: parseFloat((Math.random() * 500).toFixed(2)),
       description: `Billing for appointment ${i + 1}`,
+      // randomise status
+      status: faker.helpers.arrayElement([
+        'DRAFT',
+        'INVOICED',
+        'PAID',
+        'CANCELED',
+        'DELETED',
+      ] as $Enums.BillingStatus[]),
     });
   }
   await prisma.billing.createMany({ data: billings });
