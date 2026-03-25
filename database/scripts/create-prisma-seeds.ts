@@ -142,6 +142,20 @@ async function main() {
     appointments.push({
       date: date,
       name: `Appointment for ${date.toDateString()}`,
+      type: faker.helpers.arrayElement([
+        'CHECKUP',
+        'CLEANING',
+        'FILLING',
+        'EXTRACTION',
+        'ROOT_CANAL',
+        'ORTHODONTIC',
+        'PROSTHODONTIC',
+        'PEDIATRIC',
+        'EMERGENCY',
+        'OTHER',
+        'FOLLOW_UP',
+        'CONSULTATION',
+      ] as $Enums.AppointmentType[]),
       patientId:
         Math.floor(Math.random() * Number(ENV.PATIENT_SEEDER_COUNT)) + 1,
       userId:
@@ -171,6 +185,7 @@ async function main() {
         'PAID',
         'CANCELED',
         'DELETED',
+        'OVERDUE',
       ] as $Enums.BillingStatus[]),
     });
   }

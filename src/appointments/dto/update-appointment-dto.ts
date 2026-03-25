@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { $Enums } from '@prisma/client';
 import { IsInt, IsString, IsDate, IsEnum } from 'class-validator';
 

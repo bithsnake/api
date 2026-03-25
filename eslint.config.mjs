@@ -1,10 +1,11 @@
 // @ts-check
+import { defineConfig } from 'eslint/config';
 import eslint from '@eslint/js';
 import eslintPluginPrettierRecommended from 'eslint-plugin-prettier/recommended';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
-export default tseslint.config(
+export default defineConfig(
   {
     ignores: ['eslint.config.mjs'],
   },
@@ -19,24 +20,11 @@ export default tseslint.config(
       },
       sourceType: 'commonjs',
       parserOptions: {
-        projectService: true,
+        project: ['./tsconfig.eslint.json'],
         tsconfigRootDir: import.meta.dirname,
       },
     },
   },
-  // ✅ Flat-config override for test files
-  {
-    files: ['**/*.spec.ts'],
-    languageOptions: {
-      parserOptions: {
-        projectService: {
-          allowDefaultProject: ['src/*.spec.ts'],
-        },
-        tsconfigRootDir: import.meta.dirname,
-      },
-    },
-  },
-
   {
     rules: {
       '@typescript-eslint/no-explicit-any': 'off',

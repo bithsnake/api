@@ -17,6 +17,7 @@ export const appointMentSelect = {
   createdAt: true,
   updatedAt: true,
   status: true,
+  type: true,
 } satisfies Prisma.AppointmentSelect;
 
 @Injectable()
@@ -66,6 +67,8 @@ export class AppointmentsService extends BaseService<
       return this.prisma.appointment.create({
         data: {
           date,
+          status: 'SCHEDULED',
+          type: 'CHECKUP',
           userId: doctorId,
           patientId,
           name:

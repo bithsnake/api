@@ -10,6 +10,7 @@ datasource db {
 model Appointment {
   id        Int      @id @default(autoincrement())
   name      String
+  type      AppointmentType @default(CHECKUP)
   date      DateTime
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -165,9 +166,26 @@ enum Role {
 
 enum AppointmentStatus {
   SCHEDULED
+  ONGOING
   COMPLETED
   CANCELED
   DELETED
+}
+
+enum AppointmentType {
+  CHECKUP
+  FOLLOW_UP
+  CONSULTATION
+  CLEANING
+  FILLING
+  EXTRACTION
+  ROOT_CANAL
+  ORTHODONTIC
+  PERIODONTAL
+  PROSTHODONTIC
+  PEDIATRIC
+  EMERGENCY
+  OTHER
 }
 
 enum BillingStatus {
@@ -176,6 +194,7 @@ enum BillingStatus {
   PAID
   CANCELED
   DELETED
+  OVERDUE
 }
 
 enum NotificationType {
