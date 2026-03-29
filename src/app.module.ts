@@ -8,6 +8,7 @@ import { PatientsModule } from './patients/patients.module';
 import { RemindersModule } from './reminders/reminders.module';
 import { EventLogsModule } from './eventLogs/event-logs.module';
 import { BillingsModule } from './billings/billings.module';
+import { DashboardModule } from './dashboard/dashboard.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { BillingsModule } from './billings/billings.module';
     PatientsModule,
     RemindersModule,
     EventLogsModule,
+    DashboardModule,
   ],
   controllers: [AppController],
   providers: [AppService],
