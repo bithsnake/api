@@ -222,11 +222,58 @@ async function main() {
   await prisma.user.createMany({ data: admins });
 
   const reminders: Prisma.ReminderCreateManyInput[] = [];
-  for (let i = 0; i < Number(ENV.REMINDER_EVENT_LOG_SEEDER_COUNT); i++) {
+  const reminderTypes = ['appointment', 'billing', 'user'] as const;
+  const totalUsers =
+    Number(ENV.NEW_USER_SEEDER_COUNT) +
+    Number(ENV.DENTIST_USER_SEEDER_COUNT) +
+    Number(ENV.USER_PATIENT_SEEDER_COUNT) +
+    Number(ENV.RECEPTIONIST_USER_SEEDER_COUNT) +
+    Number(ENV.ADMIN_USER_SEEDER_COUNT);
+
+  for (let i = 0; i < Number(ENV.REMINDER_SEEDER_COUNT); i++) {
+    const reminderType = faker.helpers.arrayElement(reminderTypes);
+    const status = faker.helpers.arrayElement([
+      'PENDING',
+      'SENT',
+      'FAILED',
+    ] as $Enums.ReminderStatus[]);
+
+    const scheduledFor = faker.date.soon({ days: 14 });
+    const sentAt =
+      status === 'SENT'
+        ? faker.date.between({ from: scheduledFor, to: faker.date.future() })
+        : null;
+
+    if (reminderType === 'appointment') {
+      reminders.push({
+        appointmentId:
+          Math.floor(Math.random() * Number(ENV.APPOINTMENT_SEEDER_COUNT)) + 1,
+        message: `Reminder for appointment ${i + 1}`,
+        status,
+        scheduledFor,
+        sentAt,
+      });
+      continue;
+    }
+
+    if (reminderType === 'billing') {
+      reminders.push({
+        billingId:
+          Math.floor(Math.random() * Number(ENV.BILLING_SEEDER_COUNT)) + 1,
+        message: `Reminder for billing ${i + 1}`,
+        status,
+        scheduledFor,
+        sentAt,
+      });
+      continue;
+    }
+
     reminders.push({
-      appointmentId:
-        Math.floor(Math.random() * Number(ENV.APPOINTMENT_SEEDER_COUNT)) + 1,
-      message: `Reminder for appointment ${i + 1}`,
+      userId: Math.floor(Math.random() * totalUsers) + 1,
+      message: `Reminder for user ${i + 1}`,
+      status,
+      scheduledFor,
+      sentAt,
     });
   }
   await prisma.reminder.createMany({ data: reminders });

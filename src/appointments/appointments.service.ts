@@ -7,6 +7,7 @@ import { UpdateAppointmentDto } from './dto/update-appointment-dto';
 import { patientSelect } from '../patients/patients.service';
 import { userSelect } from '../users/users.service';
 import { billingSelect } from '../billings/billings.service';
+import { formatDateTime } from '../utils/date-utils';
 
 export const appointMentSelect = {
   id: true,
@@ -16,9 +17,24 @@ export const appointMentSelect = {
   patientId: true,
   createdAt: true,
   updatedAt: true,
+  reminders: {
+    select: {
+      createdAt: true,
+    },
+    take: 1,
+    orderBy: { createdAt: 'desc' },
+  },
   status: true,
   type: true,
 } satisfies Prisma.AppointmentSelect;
+
+type AppointmentRow = Prisma.AppointmentGetPayload<{
+  select: typeof appointMentSelect;
+}>;
+
+type AppointmentWithLastRemindedAt = AppointmentRow & {
+  lastRemindedAt: string | null;
+};
 
 @Injectable()
 export class AppointmentsService extends BaseService<
@@ -31,11 +47,20 @@ export class AppointmentsService extends BaseService<
     super();
   }
 
-  async getAll(): Promise<Appointment[]> {
+  async getAll(): Promise<AppointmentWithLastRemindedAt[]> {
     try {
-      return this.prisma.appointment.findMany({
+      const result = await this.prisma.appointment.findMany({
         select: appointMentSelect,
       });
+
+      const appointments = result.map((appointment) => ({
+        ...appointment,
+        lastRemindedAt: appointment.reminders[0]?.createdAt
+          ? formatDateTime(appointment.reminders[0]?.createdAt)
+          : null,
+      }));
+
+      return appointments;
     } catch (error) {
       this.prisma.handlePrismaWriteError(
         error,

@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BaseService } from '../class-library';
-import { Appointment, Billing, Reminder } from '@prisma/client';
+import { Appointment, Billing, Prisma } from '@prisma/client';
 import { appointMentSelect } from '../appointments/appointments.service';
 import { billingSelect } from '../billings/billings.service';
 import { reminderSelect } from '../reminders/reminders.service';
-
+import { formatDateTime } from '../utils/date-utils';
 export type AppointMentWidgetItem = {
   type: 'APPOINTMENTS';
-  upcoming: Appointment[];
-  past: Appointment[];
-  cancelled: Appointment[];
+  upcoming: (Appointment & { lastRemindedAt?: string | null })[];
+  past: (Appointment & { lastRemindedAt?: string | null })[];
+  cancelled: (Appointment & { lastRemindedAt?: string | null })[];
 };
 
 export type BillingWidgetItem = {
@@ -21,9 +21,22 @@ export type BillingWidgetItem = {
   draft: Billing[];
 };
 
+const dashboardReminderSelect = {
+  ...reminderSelect,
+  appointment: { select: { name: true } },
+} satisfies Prisma.ReminderSelect;
+
+type ReminderWidgetDataItem = Prisma.ReminderGetPayload<{
+  select: typeof dashboardReminderSelect;
+}> & {
+  appointmentName?: string;
+  billingName?: string;
+  userName?: string;
+};
+
 export type ReminderWidgetItem = {
   type: 'REMINDERS';
-  data: Reminder[] & { appointmentName: string }[];
+  data: ReminderWidgetDataItem[];
 };
 
 const thirtyDays = 30 * 24 * 60 * 60 * 1000; // 30 days in milliseconds
@@ -65,15 +78,30 @@ export class DashboardService extends BaseService<
 
       const appointmentWidgetItem: AppointMentWidgetItem = {
         type: 'APPOINTMENTS',
-        upcoming: appointMentsThirtyDaysAgo.filter(
-          (appointment) => appointment.status === 'SCHEDULED',
-        ),
-        past: appointMentsThirtyDaysAgo.filter(
-          (appointment) => appointment.status === 'COMPLETED',
-        ),
-        cancelled: appointMentsThirtyDaysAgo.filter(
-          (appointment) => appointment.status === 'CANCELED',
-        ),
+        upcoming: appointMentsThirtyDaysAgo
+          .filter((appointment) => appointment.status === 'SCHEDULED')
+          .map((appointment) => ({
+            ...appointment,
+            lastRemindedAt: appointment.reminders[0]?.createdAt
+              ? formatDateTime(appointment.reminders[0]?.createdAt)
+              : null,
+          })),
+        past: appointMentsThirtyDaysAgo
+          .filter((appointment) => appointment.status === 'COMPLETED')
+          .map((appointment) => ({
+            ...appointment,
+            lastRemindedAt: appointment.reminders[0]?.createdAt
+              ? formatDateTime(appointment.reminders[0]?.createdAt)
+              : null,
+          })),
+        cancelled: appointMentsThirtyDaysAgo
+          .filter((appointment) => appointment.status === 'CANCELED')
+          .map((appointment) => ({
+            ...appointment,
+            lastRemindedAt: appointment.reminders[0]?.createdAt
+              ? formatDateTime(appointment.reminders[0]?.createdAt)
+              : null,
+          })),
       };
 
       const billingsThirtyDaysAgo = await this.prisma.billing.findMany({
@@ -111,10 +139,7 @@ export class DashboardService extends BaseService<
               gte: new Date(Date.now() - thirtyDays),
             },
           },
-          select: {
-            ...reminderSelect,
-            appointment: { select: { name: true } },
-          },
+          select: dashboardReminderSelect,
           orderBy: {
             createdAt: 'desc',
           },
@@ -124,7 +149,7 @@ export class DashboardService extends BaseService<
         type: 'REMINDERS',
         data: appointMentRemindersThirtyDaysAgo.map((reminder) => ({
           ...reminder,
-          appointmentName: reminder.appointment.name,
+          appointmentName: reminder.appointment?.name,
         })),
       };
 

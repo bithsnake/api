@@ -46,7 +46,7 @@ model Billing {
   updatedAt     DateTime @updatedAt
 
   appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
-
+  reminders Reminder[]
   status BillingStatus @default(DRAFT)
 
   description String?
@@ -56,16 +56,28 @@ model Billing {
 
 model Reminder {
   id            Int      @id @default(autoincrement())
-  appointmentId Int
   message       String
+  status        ReminderStatus @default(PENDING)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  scheduledFor  DateTime?
+  sentAt        DateTime?
 
-  appointment Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+  appointmentId Int?
+  appointment Appointment?  @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  billingId Int?
+  billing Billing?  @relation(fields: [billingId], references: [id], onDelete: Cascade)
+
+  userId Int?
+  user  User?  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
 
   eventLogs ReminderEventLog[]
 
   @@index([appointmentId])
+  @@index([billingId])
+  @@index([userId])
 }
 model User {
   id               Int             @id @default(autoincrement())
@@ -78,6 +90,8 @@ model User {
   specialization   Specialization? @relation(fields: [specializationId], references: [id])
   createdAt        DateTime        @default(now())
   updatedAt        DateTime        @updatedAt
+
+  reminders Reminder[]
 
   appointments Appointment[]
 

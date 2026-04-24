@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma, Reminder } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { BaseService } from '../class-library';
 import { CreateReminderDto } from './dto/create-reminder-dto';
@@ -13,9 +13,13 @@ export const reminderSelect = {
   updatedAt: true,
 } satisfies Prisma.ReminderSelect;
 
+export type ReminderRecord = Prisma.ReminderGetPayload<{
+  select: typeof reminderSelect;
+}>;
+
 @Injectable()
 export class RemindersService extends BaseService<
-  Reminder,
+  ReminderRecord,
   CreateReminderDto,
   UpdateReminderDto
 > {
@@ -23,7 +27,7 @@ export class RemindersService extends BaseService<
     super();
   }
 
-  async create(body: CreateReminderDto): Promise<Reminder> {
+  async create(body: CreateReminderDto): Promise<ReminderRecord> {
     try {
       return await this.prisma.reminder.create({
         data: {
@@ -41,7 +45,7 @@ export class RemindersService extends BaseService<
     }
   }
 
-  async getById(id: number): Promise<Reminder | null> {
+  async getById(id: number): Promise<ReminderRecord | null> {
     try {
       return await this.prisma.reminder.findUnique({
         where: { id },
@@ -56,7 +60,7 @@ export class RemindersService extends BaseService<
     }
   }
 
-  async getAll(): Promise<Reminder[]> {
+  async getAll(): Promise<ReminderRecord[]> {
     try {
       return await this.prisma.reminder.findMany({
         select: reminderSelect,
@@ -70,7 +74,7 @@ export class RemindersService extends BaseService<
     }
   }
 
-  async update(id: number, body: UpdateReminderDto): Promise<Reminder> {
+  async update(id: number, body: UpdateReminderDto): Promise<ReminderRecord> {
     const data = {
       ...(body.appointmentId !== undefined
         ? { appointmentId: body.appointmentId }
@@ -105,7 +109,9 @@ export class RemindersService extends BaseService<
     }
   }
 
-  async getAllByAppointmentId(appointmentId: number): Promise<Reminder[]> {
+  async getAllByAppointmentId(
+    appointmentId: number,
+  ): Promise<ReminderRecord[]> {
     try {
       return await this.prisma.reminder.findMany({
         where: { appointmentId },
