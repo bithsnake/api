@@ -23,6 +23,7 @@ model Appointment {
 
   billing   Billing?
   reminders Reminder[]
+  messages  Message[]
   eventLogs AppointmentEventLog[]
 
   status AppointmentStatus @default(SCHEDULED)
@@ -36,6 +37,7 @@ model Patient {
   email     String   @unique
 
   appointments Appointment[]
+  messages     Message[]
 }
 
 model Billing {
@@ -79,6 +81,29 @@ model Reminder {
   @@index([billingId])
   @@index([userId])
 }
+
+model Message {
+  id            Int      @id @default(autoincrement())
+  message       String
+  status        ReminderStatus @default(PENDING)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  sentAt        DateTime?
+
+  appointmentId Int
+  appointment   Appointment @relation(fields: [appointmentId], references: [id], onDelete: Cascade)
+
+  patientId Int
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade)
+
+  senderUserId Int?
+  senderUser   User? @relation("MessageSender", fields: [senderUserId], references: [id], onDelete: SetNull)
+
+  @@index([appointmentId])
+  @@index([patientId])
+  @@index([senderUserId])
+}
+
 model User {
   id               Int             @id @default(autoincrement())
   email            String          @unique
@@ -92,7 +117,7 @@ model User {
   updatedAt        DateTime        @updatedAt
 
   reminders Reminder[]
-
+  messageSent Message[] @relation("MessageSender")
   appointments Appointment[]
 
   eventLogs UserEventLog[]
