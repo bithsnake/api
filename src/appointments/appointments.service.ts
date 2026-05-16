@@ -83,6 +83,8 @@ export class AppointmentsService extends BaseService<
         select: appointMentSelect,
       });
       if (!result) return null;
+      console.log(result);
+
       return {
         ...result,
         userName: result.user?.name ?? 'Unknown',
