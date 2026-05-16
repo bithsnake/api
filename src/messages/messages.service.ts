@@ -1,16 +1,16 @@
 import { Injectable } from '@nestjs/common';
-import { Prisma } from '@prisma/client';
+import { Prisma, PrismaClient } from '@prisma/client';
 import { PrismaService } from '../../prisma/prisma.service';
 import { CreateMessageDto } from './dto/create-message-dto';
 
-const messageSelect = {
+export const messageSelect = {
   id: true,
   appointmentId: true,
   patientId: true,
   message: true,
   createdAt: true,
   updatedAt: true,
-} satisfies Prisma.MessageSelect;
+} as const;
 
 export type MessageRecord = Prisma.MessageGetPayload<{
   select: typeof messageSelect;
@@ -22,7 +22,10 @@ export class MessagesService {
 
   async create(body: CreateMessageDto): Promise<MessageRecord> {
     try {
-      return await this.prisma.message.create({
+      const prismaClient = this.prisma as PrismaClient;
+
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+      return await prismaClient.message.create({
         data: {
           appointmentId: body.appointmentId,
           patientId: body.patientId,
@@ -36,6 +39,7 @@ export class MessagesService {
         'Message',
         'An error occurred while creating the message',
       );
+      throw error;
     }
   }
 }

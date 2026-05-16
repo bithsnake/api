@@ -16,6 +16,9 @@ export const appointMentSelect = {
   user: {
     select: { name: true },
   },
+  patient: {
+    select: { name: true },
+  },
   name: true,
   patientId: true,
   createdAt: true,
@@ -35,7 +38,10 @@ type AppointmentRow = Prisma.AppointmentGetPayload<{
   select: typeof appointMentSelect;
 }>;
 
-type AppointmentFlattened = Omit<AppointmentRow, 'user'> & { userName: string };
+type AppointmentFlattened = Omit<AppointmentRow, 'user' | 'patient'> & {
+  userName: string;
+  patientName: string;
+};
 
 type AppointmentWithLastRemindedAt = AppointmentFlattened & {
   lastRemindedAt: string | null;
@@ -61,6 +67,7 @@ export class AppointmentsService extends BaseService<
       const appointments = result.map((appointment) => ({
         ...appointment,
         userName: appointment.user?.name ?? 'Unknown',
+        patientName: appointment.patient?.name ?? 'Unknown',
         lastRemindedAt: appointment.reminders[0]?.createdAt
           ? formatDateTime(appointment.reminders[0]?.createdAt)
           : null,
@@ -88,6 +95,7 @@ export class AppointmentsService extends BaseService<
       return {
         ...result,
         userName: result.user?.name ?? 'Unknown',
+        patientName: result.patient?.name ?? 'Unknown',
       };
     } catch (error) {
       this.prisma.handlePrismaWriteError(
@@ -118,6 +126,7 @@ export class AppointmentsService extends BaseService<
       return {
         ...result,
         userName: result.user?.name ?? 'Unknown',
+        patientName: result.patient?.name ?? 'Unknown',
       };
     } catch (error) {
       this.prisma.handlePrismaWriteError(
@@ -164,6 +173,7 @@ export class AppointmentsService extends BaseService<
       return {
         ...result,
         userName: result.user?.name ?? 'Unknown',
+        patientName: result.patient?.name ?? 'Unknown',
       };
     } catch (error) {
       this.prisma.handlePrismaWriteError(

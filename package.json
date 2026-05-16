@@ -28,6 +28,9 @@
     "api:test:create:user": "curl.exe -s -X POST http://localhost:3000/users -H \"Content-Typse: application/json\" -d \"{\\\"email\\\":\\\"alice@example.com\\\",\\\"name\\\":\\\"Alice\\\",\\\"firstName\\\":\\\"Alice\\\",\\\"lastName\\\":\\\"Wonderland\\\",\\\"specialization\\\":\\\"dentist\\\"}\"",
     "api:test:create:user:prompt": "npx tsx database/scripts/create-prisma-user-test.ts"
   },
+  "prisma": {
+    "seed": "node --loader ts-node/esm prisma/seed.ts"
+  },
   "dependencies": {
     "@faker-js/faker": "^10.3.0",
     "@nestjs/common": "^11.0.1",

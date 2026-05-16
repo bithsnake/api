@@ -99,6 +99,8 @@ model Message {
   senderUserId Int?
   senderUser   User? @relation("MessageSender", fields: [senderUserId], references: [id], onDelete: SetNull)
 
+  eventLogs MessageEventLog[]
+
   @@index([appointmentId])
   @@index([patientId])
   @@index([senderUserId])
@@ -172,6 +174,19 @@ model ReminderEventLog {
   reminder Reminder @relation(fields: [reminderId], references: [id], onDelete: Cascade)
 
   @@index([reminderId])
+}
+
+model MessageEventLog {
+  id        Int       @id @default(autoincrement())
+  messageId Int
+  eventType EventType @default(CREATED)
+  event     String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  message Message @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId])
 }
 
 model UserEventLog {
