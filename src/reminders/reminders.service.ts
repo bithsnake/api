@@ -27,15 +27,51 @@ export class RemindersService extends BaseService<
     super();
   }
 
+  private async enqueueReminderJob(
+    reminder: ReminderRecord,
+    appointmentId: number,
+  ): Promise<void> {
+    const workerUrl =
+      process.env.WORKER_URL ?? 'http://localhost:4001/jobs/reminder';
+
+    try {
+      const response = await fetch(workerUrl, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          reminderId: reminder.id,
+          appointmentId,
+          patientId: 0,
+          scheduledFor: new Date().toISOString(),
+        }),
+      });
+
+      if (!response.ok) {
+        const text = await response.text();
+        console.error(
+          '[RemindersService] Worker enqueue failed:',
+          response.status,
+          text,
+        );
+      }
+    } catch (error) {
+      console.error('[RemindersService] Worker enqueue error:', error);
+    }
+  }
+
   async create(body: CreateReminderDto): Promise<ReminderRecord> {
     try {
-      return await this.prisma.reminder.create({
+      const createdReminder = await this.prisma.reminder.create({
         data: {
           appointmentId: body.appointmentId,
           message: body.message,
         },
         select: reminderSelect,
       });
+
+      void this.enqueueReminderJob(createdReminder, body.appointmentId);
+
+      return createdReminder;
     } catch (error) {
       this.prisma.handlePrismaWriteError(
         error,

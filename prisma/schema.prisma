@@ -151,7 +151,7 @@ model ReminderEventLog {
 
 model UserEventLog {
   id        Int       @id @default(autoincrement())
-  userId    Int?      
+  userId    Int?
   eventType EventType @default(CREATED)
   event     String
   createdAt DateTime  @default(now())

@@ -13,6 +13,9 @@ export const appointMentSelect = {
   id: true,
   date: true,
   userId: true,
+  user: {
+    select: { name: true },
+  },
   name: true,
   patientId: true,
   createdAt: true,
@@ -32,7 +35,9 @@ type AppointmentRow = Prisma.AppointmentGetPayload<{
   select: typeof appointMentSelect;
 }>;
 
-type AppointmentWithLastRemindedAt = AppointmentRow & {
+type AppointmentFlattened = Omit<AppointmentRow, 'user'> & { userName: string };
+
+type AppointmentWithLastRemindedAt = AppointmentFlattened & {
   lastRemindedAt: string | null;
 };
 
@@ -55,6 +60,7 @@ export class AppointmentsService extends BaseService<
 
       const appointments = result.map((appointment) => ({
         ...appointment,
+        userName: appointment.user?.name ?? 'Unknown',
         lastRemindedAt: appointment.reminders[0]?.createdAt
           ? formatDateTime(appointment.reminders[0]?.createdAt)
           : null,
@@ -70,12 +76,17 @@ export class AppointmentsService extends BaseService<
     }
   }
 
-  async getById(id: number): Promise<Appointment | null> {
+  async getById(id: number): Promise<AppointmentFlattened | null> {
     try {
-      return this.prisma.appointment.findUnique({
+      const result = await this.prisma.appointment.findUnique({
         where: { id },
         select: appointMentSelect,
       });
+      if (!result) return null;
+      return {
+        ...result,
+        userName: result.user?.name ?? 'Unknown',
+      };
     } catch (error) {
       this.prisma.handlePrismaWriteError(
         error,
@@ -85,11 +96,11 @@ export class AppointmentsService extends BaseService<
     }
   }
 
-  async create(body: CreateAppointmentDto): Promise<Appointment> {
+  async create(body: CreateAppointmentDto): Promise<AppointmentFlattened> {
     const { date, patientId, name, userId: doctorId } = body;
 
     try {
-      return this.prisma.appointment.create({
+      const result = await this.prisma.appointment.create({
         data: {
           date,
           status: 'SCHEDULED',
@@ -102,6 +113,10 @@ export class AppointmentsService extends BaseService<
         },
         select: appointMentSelect,
       });
+      return {
+        ...result,
+        userName: result.user?.name ?? 'Unknown',
+      };
     } catch (error) {
       this.prisma.handlePrismaWriteError(
         error,
@@ -126,7 +141,10 @@ export class AppointmentsService extends BaseService<
     }
   }
 
-  async update(id: number, body: UpdateAppointmentDto): Promise<Appointment> {
+  async update(
+    id: number,
+    body: UpdateAppointmentDto,
+  ): Promise<AppointmentFlattened> {
     const data = {
       ...(body.date !== undefined ? { date: body.date } : {}),
       ...(body.patientId !== undefined ? { patientId: body.patientId } : {}),
@@ -136,11 +154,15 @@ export class AppointmentsService extends BaseService<
     };
 
     try {
-      return await this.prisma.appointment.update({
+      const result = await this.prisma.appointment.update({
         where: { id },
         data,
         select: appointMentSelect,
       });
+      return {
+        ...result,
+        userName: result.user?.name ?? 'Unknown',
+      };
     } catch (error) {
       this.prisma.handlePrismaWriteError(
         error,
